@@ -31,13 +31,13 @@ from checkOnJig import CheckOn
     
     
 def main_process():
-    cap_detect = cv2.VideoCapture(2)
+    cap_detect = cv2.VideoCapture(0)
     # cv2.imshow(self.cap_detect)
     # cv2.waitKey(0)
     # Khai báo USB Camera Detect Config
     get_cap_detect = True
     
-    cap_check = cv2.VideoCapture(0) # Khai báo USB Camera Check Config
+    cap_check = cv2.VideoCapture(1) # Khai báo USB Camera Check Config
     cap_check.set(3, 1920)
     cap_check.set(4, 1080)
     # cv2.imshow(self.cap_check)
@@ -47,10 +47,12 @@ def main_process():
     cap_detect.set(4, 1080)
     # self.cap_detect.set(3, 1920)
     # self.cap_detect.set(4, 1080)
+    
     ret, image = cap_detect.read()
+    print("ret", ret)
     # image = cv2.resize(image, (int(717 * self.width_rate), int(450 * self.height_rate)), interpolation = cv2.INTER_AREA) # Resize cho Giao diện
-    # plt.imshow(image)
-    # plt.show()
+    plt.imshow(image)
+    plt.show()
     
     ret, image1 = cap_check.read() # Lấy dữ liệu từ camera
     # plt.subplot(2,1)

@@ -61,7 +61,7 @@ with open('clf.pkl', 'rb') as f:
 
 height, weight = 1080, 1920
 start_row,start_col= int((height/10)),int((weight/10)*4)
-end_row,end_col= int((height/10)*4),int((weight/10)*6) 
+end_row,end_col= int((height/10)*4),int((weight/10)*6)
 
 def check(mean):
 
@@ -89,6 +89,7 @@ def check(mean):
 
 # plt.imshow(img_cr, cmap='gray')
 # plt.show()
+
 
 
 

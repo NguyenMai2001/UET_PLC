@@ -12,7 +12,6 @@ import sys
 import time
 import os
 import math
-from matplotlib import pyplot as plt
 
 import checkAlign
 from connectPLC import PLC
@@ -206,18 +205,6 @@ class App(QMainWindow):
             table.setStyleSheet("color: rgb(255, 255, 255);")
             self.tray2.append(table)
 
-         # Note Table
-        self.s_name = QLabel("REPORT", self)
-        self.s_name.setGeometry(960 * self.width_rate, 127 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
-        self.s_name.setAlignment(Qt.AlignCenter)
-        self.s_name.setStyleSheet("background-color:rgb(50, 130, 184);"
-                                    "color: rgb(255, 255, 255);"
-                                    "font: bold 14pt;")
-        self.textBox = QPlainTextEdit(self)
-        self.textBox.setGeometry(960 * self.width_rate, 185 * self.height_rate, 399 * self.width_rate, 410 * self.height_rate)
-        self.textBox.setFont(QFont('', int(14 / self.font_rate), QFont.Bold))
-        
-        
         # Table Info Area        
         self.s_name = QLabel("INFORMATION", self)
         self.s_name.setGeometry(1450 * self.width_rate, 127 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
@@ -275,9 +262,7 @@ class App(QMainWindow):
         self.exit_button.setHidden(0)
         self.exit_button.setStyleSheet("border: none")
         self.exit_button.clicked.connect(self.close)
-        
-        
-        # =============================================================================
+
         # # Create Thread
         # self.camera_thread = Camera()
         # self.camera_thread.setup.connect(self.setup_camera)
@@ -474,8 +459,6 @@ class App(QMainWindow):
                 self.cap_detect.set(4, 1080)
                 ret, image = self.cap_detect.read()
                 resize_img = cv2.resize(image, (int(717 * self.width_rate), int(450 * self.height_rate)), interpolation = cv2.INTER_AREA) # Resize cho Giao diện
-                plt.imshow(resize_img)
-                plt.show()
                 detect = Detect()
 
                 # Xử lý Ảnh
@@ -503,8 +486,8 @@ class App(QMainWindow):
                 resize_img = cv2.resize(image, (int(717 * self.width_rate), int(450 * self.height_rate)), interpolation = cv2.INTER_AREA) # Resize cho Giao diện
                 
                 # Kiểm tra Jig
-                checkOn = CheckOn()
-                checkOn.image = image[150:280, 245:445]
+                CheckOn = CheckOn()
+                CheckOn.image = image[150:280, 245:445]
 
                 # Nếu không có linh kiện trên Jig
                 if CheckOn.check(CheckOn.calc_mean()) == 0:
@@ -572,6 +555,7 @@ class App(QMainWindow):
         self.cap_check = cv2.VideoCapture(0) # Khai báo USB Camera Check Config
         self.get_cap_check = True
 
+    
     # Loop Get Command from PLC
     def get_command(self):
         self.command = self.Controller.queryCommand()

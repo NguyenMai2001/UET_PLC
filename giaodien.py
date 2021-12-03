@@ -147,13 +147,13 @@ class App(QMainWindow):
         
         # Show Check Camera
         self.cam2_name = QLabel("CHECK CAMERA", self)
-        self.cam2_name.setGeometry(960 * self.width_rate, 127 * self.height_rate, 810 * self.width_rate, 60 * self.height_rate)
+        self.cam2_name.setGeometry(1035 * self.width_rate, 127 * self.height_rate, 810 * self.width_rate, 60 * self.height_rate)
         self.cam2_name.setAlignment(Qt.AlignCenter)
         self.cam2_name.setStyleSheet("background-color: rgb(50, 130, 184);"
                                     "color: rgb(255, 255, 255);"
                                     "font: bold 14pt;")
         self.cam2 = QLabel(self)
-        self.cam2.setGeometry(960 * self.width_rate, 185 * self.height_rate, 810 * self.width_rate, 400 * self.height_rate)
+        self.cam2.setGeometry(1035 * self.width_rate, 185 * self.height_rate, 810 * self.width_rate, 400 * self.height_rate)
         self.cam2.setStyleSheet("border-color: rgb(50, 130, 184);"
                                 "border-width: 5px;"
                                 "border-style: inset;")
@@ -216,13 +216,13 @@ class App(QMainWindow):
 
         # Report Table
         self.s_name = QLabel("REPORT", self)
-        self.s_name.setGeometry(960 * self.width_rate, 605 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
+        self.s_name.setGeometry(1010 * self.width_rate, 605 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
         self.s_name.setAlignment(Qt.AlignCenter)
         self.s_name.setStyleSheet("background-color:rgb(50, 130, 184);"
                                     "color: rgb(255, 255, 255);"
                                     "font: bold 14pt;")
         self.textBox = QPlainTextEdit(self)
-        self.textBox.setGeometry(960 * self.width_rate, 663 * self.height_rate, 399 * self.width_rate, 180 * self.height_rate)
+        self.textBox.setGeometry(1010 * self.width_rate, 663 * self.height_rate, 399 * self.width_rate, 180 * self.height_rate)
         self.textBox.setFont(QFont('', int(14 / self.font_rate), QFont.Bold))
 
         
@@ -237,7 +237,7 @@ class App(QMainWindow):
 
         self.s_name = QLabel("NOTE", self)
         # self.s_name.setGeometry(1450 * self.width_rate, 127 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
-        self.s_name.setGeometry(960 * self.width_rate, 850 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
+        self.s_name.setGeometry(1010 * self.width_rate, 850 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
 
         self.s_name.setAlignment(Qt.AlignCenter)
         self.s_name.setStyleSheet("background-color:rgb(50, 130, 184);"
@@ -246,7 +246,7 @@ class App(QMainWindow):
 
         self.note_table = QTableWidget(3, 2, self)
         
-        self.note_table.setGeometry(960 * self.width_rate, 903 * self.height_rate, 399 * self.width_rate, 162 * self.height_rate)
+        self.note_table.setGeometry(1010 * self.width_rate, 903 * self.height_rate, 399 * self.width_rate, 162 * self.height_rate)
         self.note_table.horizontalHeader().hide()
         self.note_table.verticalHeader().hide()
         self.note_table.setFont(self.font)
@@ -387,7 +387,8 @@ class App(QMainWindow):
 
     #Hàm stream CAMERA DETECT lên giao diện
     def update_detect_image(self, img):
-        rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(img, (810,400))
+        rgbImage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         h, w, ch = rgbImage.shape
         bytesPerLine = ch * w
         convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
@@ -397,7 +398,8 @@ class App(QMainWindow):
     
     # Hàm stream CAMERA CHECK lên giao diện
     def update_check_image(self, img):
-        rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        image = cv2.resize(img, (810,400))
+        rgbImage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         h, w, ch = rgbImage.shape
         bytesPerLine = ch * w
         convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
@@ -490,10 +492,10 @@ class App(QMainWindow):
                 for i in range(6):
                     self.tray[1-k].setItem(j,i,QTableWidgetItem())
                     if(int(data[c])):
-                        self.tray[1-k].item(j,i).setBackground(QColor(128, 255, 0)) #Nếu có linh kiện, đổi màu thành xanh
+                        self.tray[1-k].item(j,i).setBackground(QColor(67, 138, 94)) #Nếu có linh kiện, đổi màu thành xanh
                         self.total += 1
                     else:
-                        self.tray[1-k].item(j,i).setBackground(QColor(255,0, 0)) #Không có linh kiện, đổi màu thành đỏ
+                        self.tray[1-k].item(j,i).setBackground(QColor(232, 80, 91)) #Không có linh kiện, đổi màu thành đỏ
                         self.total += 1
                     c += 1
         
@@ -638,7 +640,7 @@ if __name__ == '__main__':
     image = cv2.imread(path)
 
    
-    # ex.update_check_image(image)
+    ex.update_check_image(image)
 
     
     ex.init_statistic()
@@ -659,13 +661,13 @@ if __name__ == '__main__':
     # mask = np.append(mask, detect.check(detect.crop_tray_4))
     # print(mask)
 
-    result = np.zeros(192, dtype=int)
+    result = np.ones(192, dtype=int)
     check_yes = np.array([0,1,2,3,4, 7, 46, 47, 95, 96, 97, 98, 143, 144, 190,191])
                 
     for i in range(192):
         for j in range(check_yes.size):
             if i == check_yes[j]: 
-                result[i] = 1
+                result[i] = 0
     print(result)
     ex.update_YesNo_data_to_table(result)
     # ex.update_data(mask)

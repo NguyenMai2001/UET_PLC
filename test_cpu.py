@@ -14,7 +14,6 @@ import sys
 import time
 import os
 import math
-import threading
 
 # import checkAlign
 from connectPLC import PLC
@@ -46,7 +45,7 @@ class Thread(QThread):
     def run(self):
         while True:
             self.progress.emit()
-            time.sleep(0.5)
+            # time.sleep(0.1)
 
 class Query(QThread):
     progress = pyqtSignal()
@@ -54,7 +53,7 @@ class Query(QThread):
     def run(self):
         while True:
             self.progress.emit()
-            time.sleep(0.4)
+            # time.sleep(0.5)
 
 class Camera(QThread):
     setup = pyqtSignal()
@@ -78,7 +77,7 @@ class App(QMainWindow):
         self.number_error2 = 0
         self.number_error3 = 0
         self.count = 0
-        self.count_error = -1
+        self.count_error = 0
 
         #Nháp
         self.result = np.zeros(192, dtype=int)
@@ -89,14 +88,10 @@ class App(QMainWindow):
         self.cap_check = any
         self.get_cap_detect = False
         self.get_cap_check = False
-        self.cam_check = 1
-        self.cam_detect = 0
-        
 
         #NUC - PLC
         self.Controller = PLC()
         self.command = ''
-        self.prev_command = ''
         self.status_cam_checked = ''
         self.status_cam_inJig = ''
         self.jig_signal = False
@@ -181,15 +176,7 @@ class App(QMainWindow):
         # Set Font
         self.font = QFont('', int(13 * self.font_rate), QFont.Bold)
 
-         #Swap button
-        self.button1 = QPushButton(self)
-        self.button1.setText("SWAP CAM")
-        self.button1.move(64,32)
-        self.button1.clicked.connect(self.button1_clicked)
-        self.button1.setGeometry(1755 * self.width_rate, 127 * self.height_rate, 120* self.width_rate, 62 * self.height_rate)
-        self.button1.setStyleSheet("background-color: rgb(255, 128, 128);"
-                                    "color: rgb(255, 255, 255);"
-                                    "font: bold 11pt;")
+        
 
         
         # Trays Information
@@ -358,35 +345,25 @@ class App(QMainWindow):
         self.exit_button.clicked.connect(self.close)
 
         # Create Thread
-        # self.camera_thread = Camera()
-        # self.camera_thread.setup.connect(self.setup_camera)
+        self.camera_thread = Camera()
+        self.camera_thread.setup.connect(self.setup_camera)
         self.main_thread = Thread()
         self.main_thread.progress.connect(self.main_process)
-        # self.plc_thread = Query()
-        # self.main_thread.progress.connect(self.get_command)
+        self.plc_thread = Query()
+        self.main_thread.progress.connect(self.get_command)
 
         # Run Thread
         # self.camera_thread.start()
-        # self.main_thread.start()
-        # self.plc_thread.start()
+        self.main_thread.start()
+        self.plc_thread.start()
 
 
     #Hết giao diện ###########################################################################################################
-    def button1_clicked(self):
-        
-        print("Befor: Cam_Check  ", self.cam_check, "Cam_Detect ", self.cam_detect)
-        self.cam_check, self.cam_detect = self.cam_detect, self.cam_check
-        print("After: Cam_Check  ", self.cam_check, "Cam_Detect ", self.cam_detect)
 
-        self.setup_camera()
-        ret3, image1 = self.cap_check.read() # Lấy dữ liệu từ camera
-
-        self.update_check_image(image1)
 
     #Hàm stream CAMERA DETECT lNGên giao diện
     def update_detect_image(self, img):
-        image = cv2.resize(img, (810,400))
-        rgbImage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgbImage.shape
         bytesPerLine = ch * w
         convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
@@ -396,8 +373,7 @@ class App(QMainWindow):
     
     # Hàm stream CAMERA CHECK lên giao diện
     def update_check_image(self, img):
-        image = cv2.resize(img, (810,400))
-        rgbImage = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         h, w, ch = rgbImage.shape
         bytesPerLine = ch * w
         convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
@@ -412,14 +388,14 @@ class App(QMainWindow):
     
     #Hàm set_up camera
     def setup_camera(self):
-        self.cap_detect = cv2.VideoCapture(self.cam_detect) # Khai báo USB Camera Detect Config
+        self.cap_detect = cv2.VideoCapture(1) # Khai báo USB Camera Detect Config
         self.get_cap_detect = True
         self.cap_detect.set(3, 1920)
         self.cap_detect.set(4, 1080)
          # cv2.imshow(self.cap_detect)
         # cv2.waitKey(0)
 
-        self.cap_check = cv2.VideoCapture(self.cam_check) # Khai báo USB Camera Check Config
+        self.cap_check = cv2.VideoCapture(0) # Khai báo USB Camera Check Config
         self.get_cap_check = True
         
         self.cap_check.set(3, 1920)
@@ -510,33 +486,6 @@ class App(QMainWindow):
                     #     self.tray2[k].item(j,i).setBackground(QColor(255,0, 0)) #Không có linh kiện, đổi màu thành đỏ
                     #     self.total += 1
                     c += 1
-    def reset_data_tray_NG(self):
-        
-        self.count_error = -1
-        for j in range(6):
-            for i in range(8):
-                self.tray[2].setItem(i,j,QTableWidgetItem())
-                self.tray[2].item(i,j).setBackground(QColor(220, 220, 220)) 
-        
-        for j in range(6):
-            for i in range(8):
-                self.tray2[2].setItem(i,j,QTableWidgetItem())
-                self.tray2[2].item(i,j).setBackground(QColor(220, 220, 220))
-
-    def reset_data_tray_cam_in(self):
-
-        self.count = 0
-        for k in range(2):    
-            for j in range(7,-1,-1):
-                for i in range(5,-1,-1):
-                    self.tray[1-k].setItem(j,i,QTableWidgetItem()) 
-                    self.tray[1-k].item(j,i).setBackground(QColor(220,220,220))
-        for k in range(2):    
-            for j in range(7,-1,-1):
-                for i in range(5,-1,-1):
-                    self.tray2[1-k].setItem(j,i,QTableWidgetItem()) 
-                    self.tray2[1-k].item(j,i).setBackground(QColor(220,220,220))     
-                    
 
     #Hàm cập nhật bảng số liệu _ cập nhật Information Table
     def update_data_check(self, data):
@@ -550,16 +499,15 @@ class App(QMainWindow):
 
         if self.count_error == 96:
             self.count_error = 0
-            self.reset_data_tray_NG()
     
         # Bỏ qua khi không có linh kiện trong mảng dữ liệu
         
-        # print("Result = ", self.result)
-        # print("Count hien tai = ", self.count)
+        print("Result = ", self.result)
+        print("Count hien tai= ", self.count)
         while int(self.result[self.count]) != 1:
             self.count += 1
-        # print("count = ", self.count)
-        # print("Count _ Error = ", self.count_error)
+        print("count = ", self.count)
+
         # Cập nhật số liệu Kiểm tra
         tested = QTableWidgetItem("{}".format(self.number_tested) + " / {}".format(self.total))
         tested.setTextAlignment(Qt.AlignCenter)
@@ -576,15 +524,15 @@ class App(QMainWindow):
 
 
         #Lay so lieu tren tray NG
-        # self.count_error = self.number_error1+self.number_error2+self.number_error3
+        self.count_error = self.number_error1+self.number_error2+self.number_error3
         tray_NG_idx = self.count_error // 48
         row_NG = self.count_error % 48 // 6
         col_NG = self.count_error % 48 % 6
-        # print("NG: ", self.count_error, tray_NG_idx, row_NG, col_NG)
+        print("NG: ", self.count_error, tray_NG_idx, row_NG, col_NG)
         
 
         dispMap =["DF_S" ,"AF_D" ,"FIXD" ,"EMPT" ,"DATA" ,"AWB" ,"CRC"]
-                                    
+
         #if tray_idx < 2:
         if data == "OK":
             self.number_success += 1
@@ -608,14 +556,14 @@ class App(QMainWindow):
             if tray_NG_idx == 0 :
                 if data == "NG":
                     self.number_error1 += 1
-                    error1 = QTableWidgetItem("SKEW")
+                    error1 = QTableWidgetItem("NG")
                     error1.setTextAlignment(Qt.AlignCenter)
                     self.tray2[2].setItem(row_NG, col_NG, error1)
-                    self.tray2[2].item(row_NG,col_NG).setBackground(QColor(249, 218,111)) #vàng
+                    self.tray2[2].item(row_NG,col_NG).setBackground(QColor(232, 80, 91))
                     
-                elif data == "I2C":
+                elif data == "I2_C":
                     self.number_error2 += 1
-                    error2= QTableWidgetItem("I2C")
+                    error2= QTableWidgetItem("I2_C")
                     error2.setTextAlignment(Qt.AlignCenter)
                     self.tray2[2].setItem(row_NG, col_NG, error2)
                     self.tray2[2].item(row_NG,col_NG).setBackground(QColor(232, 80, 91))
@@ -630,14 +578,14 @@ class App(QMainWindow):
             elif tray_NG_idx == 1:
                     if data == "NG":
                         self.number_error1 += 1
-                        error1 = QTableWidgetItem("SKEW")
+                        error1 = QTableWidgetItem("NG")
                         error1.setTextAlignment(Qt.AlignCenter)
-                        self.tray[2].setItem(row_NG, col_NG, error1)
-                        self.tray[2].item(row_NG,col_NG).setBackground(QColor(249, 218,111))
+                        self.tray[2].setItem(row, col, error1)
+                        self.tray[2].item(row,col).setBackground(QColor(232, 80, 91))
                         
-                    elif data == "I2C":
+                    elif data == "I2_C":
                         self.number_error2 += 1
-                        error2= QTableWidgetItem("I2C")
+                        error2= QTableWidgetItem("I2_C")
                         error2.setTextAlignment(Qt.AlignCenter)
                         self.tray[2].setItem(row_NG, col_NG, error2)
                         self.tray[2].item(row_NG,col_NG).setBackground(QColor(232, 80, 91))
@@ -682,7 +630,7 @@ class App(QMainWindow):
         # Linh kiện kiểm tra xong sẽ xóa khỏi mảng dữ liệu
         self.result[self.count] = 0
         self.count += 1
-        # print("Sau khi da kt count = ", self.count)
+        print("Sau khi da kt count = ", self.count)
 
     def updateTimer(self):
         cr_time = QTime.currentTime()
@@ -693,46 +641,30 @@ class App(QMainWindow):
     #xử lý ảnh
     
     def main_process(self):
-
-        #Load command
-        self.command = self.Controller.queryCommand()
-        print(self.command)
-        if self.command == "Done_detect":
-            self.prev_command = 'Done_detect'
-        self.status_cam_checked = self.Controller.status_cam_checked()
-        self.status_cam_inJig = self.Controller.status_cam_in_jig()
-        self.jig_signal = self.Controller.jig_Signal()
-
-        
-
         if self.command == 'Detect':
-            #Reset Tray
-
-            self.reset_data_tray_cam_in()
-            self.reset_data_tray_NG()
-
-
             if self.get_cap_detect == True:
-                ret1, image = self.cap_detect.read()
-                print("Detect: Cam Detect:", self.cam_detect, "Cam Check:", self.cam_check)
-                # image = cv2.resize(image, (int(717 * self.width_rate), int(450 * self.height_rate)), interpolation = cv2.INTER_AREA) # Resize cho Giao diện
-                #plt.imshow(image)
-                #plt.show()
+                # ret, image = self.cap_detect.read()
+                # # image = cv2.resize(image, (int(717 * self.width_rate), int(450 * self.height_rate)), interpolation = cv2.INTER_AREA) # Resize cho Giao diện
+                # #plt.imshow(image)
+                # #plt.show()
 
-                #CHECK TRAY
-                detect = Detect()
-                img = check_chess(image)
-                detect.rotated(img)
-                detect.image = cv2.imread('rotated_image.jpg', cv2.IMREAD_GRAYSCALE)
-                # plt.imshow(detect.image, cmap="gray")
-                # plt.show()
-                detect.thresh()
+                # #CHECK TRAY
+                # detect = Detect()
+                # img = check_chess(image)
+                # detect.rotated(img)
+                # detect.image = cv2.imread('rotated_image.jpg', cv2.IMREAD_GRAYSCALE)
+                # # plt.imshow(detect.image, cmap="gray")
+                # # plt.show()
+                # detect.thresh()
 
-                # Detect YES/NO
-                self.result = detect.check(detect.crop_tray_1)
-                self.result = np.append(self.result, detect.check(detect.crop_tray_2))
-                self.result = np.append(self.result, detect.check(detect.crop_tray_3))
-                self.result = np.append(self.result, detect.check(detect.crop_tray_4))
+                # # Detect YES/NO
+                # self.result = detect.check(detect.crop_tray_1)
+                # self.result = np.append(self.result, detect.check(detect.crop_tray_2))
+                # self.result = np.append(self.result, detect.check(detect.crop_tray_3))
+                # self.result = np.append(self.result, detect.check(detect.crop_tray_4))
+
+                for i in range(9):
+                    self.result[i] = 1
                 print("KQ detect: ", self.result)
                 # plt.imshow(detect.image, cmap="gray")
                 # plt.show()
@@ -744,35 +676,21 @@ class App(QMainWindow):
                 self.Controller.sendCommand(self.command)
 
                 #update len giao dien
-                self.update_YesNo_data_to_table(self.result) 
+                # self.update_YesNo_data_to_table(self.result) 
                 # self.init_statistic()
-
             
         elif self.command == 'Check' and self.prev_command == 'Done_detect':
             # print("Check")
             if self.get_cap_check == True:
-                # again = True
-                # while again:
-                #     try:
-                #         print("Befor_Check: Cam Detect:", self.cam_detect, "Cam Check:", self.cam_check)
-                #         ret2, image1 = self.cap_check.read()
-                #         again = not(ret2)
-                #     except:
-                #         print("An exception occurred")
-                
-                # # Lấy dữ liệu từ camera
-                # # plt.subplot(2,1)
-                # # plt.imshow(image)
-                # #plt.imshow(image1, cmap='gray')
-                # #plt.show()
+                ret, image1 = self.cap_check.read() # Lấy dữ liệu từ camera
+                # plt.subplot(2,1)
+                # plt.imshow(image)
+                #plt.imshow(image1, cmap='gray')
+                #plt.show()
 
-
-                # self.update_check_image(image1)
-
-                # cv2.imwrite('checkjig.jpg', image1)
-                # img_check = cv2.imread('checkjig.jpg', cv2.IMREAD_GRAYSCALE)
-                # check = checkAlign.check(img_check)
-                check = 1
+                cv2.imwrite('checkjig.jpg', image1)
+                img_check = cv2.imread('checkjig.jpg', cv2.IMREAD_GRAYSCALE)
+                check = checkAlign.check(img_check)
                 print(check)
                 # plt.imshow(img_check, cmap='gray')
                 # plt.show()
@@ -786,8 +704,8 @@ class App(QMainWindow):
                     if self.jig_signal: #da giap Jig
                         #self.checkError = f.err_Check("a")
                         #====================================================================#
-                        time.sleep(1)
-                        user = "1"
+                        # time.sleep(1)
+                        user = "a"
                         arduino.write(bytes(user,'utf-8'))
                         time.sleep(5)
                         data = arduino.readline()
@@ -816,9 +734,8 @@ class App(QMainWindow):
                             if errCheck[5] == "1": index = 7
                             if errCheck[3] == "1": index = 3
                             if errCheck[0] == "1": index = 1
-                        dispMap =["OK" , "I2C" , "DF_S" ,"AF_D" ,"FIXD" ,"EMPT" ,"DATA" ,"AWB" ,"CRC"]
+                        dispMap =["OK" , " I2C" , "DF_S" ,"AF_D" ,"FIXD" ,"EMPT" ,"DATA" ,"AWB" ,"CRC"]
                         Error = dispMap[index]
-                        # Error = "OK"
                         print("loi hien tai:", Error)
                 #================================================================================#
                         self.checkError = Error
@@ -828,19 +745,17 @@ class App(QMainWindow):
                             print(Error)
                             self.Controller.send_status_cam_check(self.status_cam_checked)
                         else:
-                            self.count_error +=1
                             self.status_cam_checked = 'NG'
                             print(Error)
                             self.Controller.send_status_cam_check(self.status_cam_checked)
 
-                        self.update_data_check(self.checkError)
+                        # self.update_data_check(self.checkError)
                     
                 else:
-                    self.count_error += 1
                     self.status_cam_inJig = 'Skeef'
                     self.Controller.send_status_cam_inJig(self.status_cam_inJig)
 
-                    self.update_data_check("NG")
+                    # self.update_data_check("NG")
             self.prev_command = 'check'
 
     
@@ -848,22 +763,9 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     
     ex = App()
-    # ex.setup_camera()
+    ex.setup_camera()
     print("123")
     ex.show()
-    time.sleep(0.5)
-    ex.setup_camera()
-    print("Cam Detect:", ex.cam_detect, "Cam Check:", ex.cam_check)
-    ex.init_statistic()
-
-    ret0, image1 = ex.cap_check.read() # Lấy dữ liệu từ camera
-    ex.update_check_image(image1)
-
-    # if ex.button1_status == 1:
-    #     ret, image1 = ex.cap_check.read() # Lấy dữ liệu từ camera
-    #     ex.update_check_image(image1)
-    
-    ex.main_thread.start()
 
     sys.exit(app.exec_())
 

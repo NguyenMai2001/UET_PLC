@@ -101,7 +101,7 @@ class Detect(object):
         cv2.namedWindow("image")
         cv2.setMouseCallback("image", self.find_location_crop)
         while True:
-            cv2.imshow("image", self.image)
+            #cv2.imshow("image", self.image)
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
         cv2.destroyAllWindows()
@@ -112,7 +112,7 @@ class Detect(object):
         self.crop_tray_2 = self.image[self.t2_y_begin:self.t2_y_end, self.t2_x_begin:self.t2_x_end]
         self.crop_tray_3 = self.image[self.t3_y_begin:self.t3_y_end, self.t3_x_begin:self.t3_x_end]
         self.crop_tray_4 = self.image[self.t4_y_begin:self.t4_y_end, self.t4_x_begin:self.t4_x_end]
-
+    
         # gray_tray_1 = cv2.cvtColor(crop_tray_1, cv2.COLOR_BGR2GRAY)
         # gray_tray_2 = cv2.cvtColor(crop_tray_2, cv2.COLOR_BGR2GRAY)
         # gray_tray_3 = cv2.cvtColor(crop_tray_3, cv2.COLOR_BGR2GRAY)
@@ -140,7 +140,7 @@ class Detect(object):
             sample_img = cut1.reshape(-1,31*27)
             ypred = clf_tray.predict(sample_img)
 
-            # print(ypred)
+            print(ypred)
             # plt.imshow(cut1, cmap='gray')
             # plt.show()
             # print(i+1)
@@ -150,22 +150,22 @@ class Detect(object):
     def rotated(self, image):
         height, width = image.shape[:2]
         center = (width/2, height/2)
-        rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=-4, scale=1)
+        rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=1, scale=1)
         rotated_image = cv2.warpAffine(src=image, M=rotate_matrix, dsize=(width, height))
-        cv2.imshow('Rotated image', rotated_image)
+        #cv2.imshow('Rotated image', rotated_image)
         cv2.waitKey(0)
         cv2.imwrite('rotated_image.jpg', rotated_image)
 
 if __name__ == "__main__":
-    file_test = cv2.imread('train_tray_test/tray_test (10).jpg') #demo
+    file_test = cv2.imread('train_tray/train1_2.jpg') #demo
     img = check_chess(file_test)
     # cv2.imwrite('anh.png', img)
     # cv2.imshow("hâhaaha", img)
     detect = Detect()
     detect.rotated(img)
     detect.image = cv2.imread('rotated_image.jpg', cv2.IMREAD_GRAYSCALE)
-    # plt.imshow(detect.image, cmap="gray")
-    # plt.show()
+    plt.imshow(detect.image, cmap="gray")
+    plt.show()
     # detect.image = cv2.resize(detect.image, (1920, 1080), interpolation=cv2.INTER_AREA)
 
     # detect.get_coord()
@@ -174,9 +174,9 @@ if __name__ == "__main__":
     mask = np.append(mask, detect.check(detect.crop_tray_2))
     mask = np.append(mask, detect.check(detect.crop_tray_3))
     mask = np.append(mask, detect.check(detect.crop_tray_4))
-    # print(mask)
-    for i in range(192):
-        print(int(mask[i]))
+    print(mask)
+    # for i in range(192):
+    #     print(int(mask[i]))
     # cv2.imshow("image", detect.crop_tray_1)
     # cv2.waitKey(0)
 

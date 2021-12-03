@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import os
 import cv2
 
-
 directory = 'train_data'
 classes = ['wrong', 'correct']
 
@@ -60,8 +59,8 @@ for img, label in training_data:
     X.append(img)
     y.append(label)
 
-print(np.shape(X[-1]))
-print(type(X))
+# print(np.shape(X[-1]))
+# print(type(X))
 X = np.array(X).reshape(-1,int((height/10)*3)*int((weight/10)*2))
 y = np.array(y)
 # print(type(X))

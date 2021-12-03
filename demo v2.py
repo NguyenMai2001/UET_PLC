@@ -35,7 +35,7 @@ class Thread(QThread):
     def run(self):
         while True:
             self.progress.emit()
-            time.sleep(0.1)
+            time.sleep(0.5)
 
 class Query(QThread):
     progress = pyqtSignal()
@@ -43,7 +43,7 @@ class Query(QThread):
     def run(self):
         while True:
             self.progress.emit()
-            time.sleep(0.5)
+            time.sleep(1)
 
 class Send(QThread):
     progress = pyqtSignal()
@@ -51,7 +51,13 @@ class Send(QThread):
     def run(self):
         while True:
             self.progress.emit()
-            time.sleep(0.1)
+            time.sleep(3)
+
+class Camera(QThread):
+    setup = pyqtSignal()
+
+    def run(self):
+        self.setup.emit()
 
 class App(QMainWindow):
     def __init__(self):
@@ -76,7 +82,7 @@ class App(QMainWindow):
         self.get_cap_check = False
 
         self.Controller = PLC()
-        self.command = "Idle"
+        self.command = ""
         self.delay = True
         self.wait = False
         self.demo_count = 0
@@ -257,18 +263,21 @@ class App(QMainWindow):
         self.exit_button.clicked.connect(self.close)
 
         # Create Thread
+        # self.camera_thread = Camera()
+        # self.camera_thread.setup.connect(self.setup_camera)
         self.main_thread = Thread()
         self.main_thread.progress.connect(self.main_process)
-        self.demo_thread = Query()
-        self.demo_thread.progress.connect(self.demo_query)
-        self.send_thread = Send()
-        self.send_thread.progress.connect(self.demo_send)
+        self.plc_g_thread = Query()
+        self.plc_g_thread.progress.connect(self.get_command)
+        self.plc_s_thread = Send()
+        self.plc_s_thread.progress.connect(self.send_command)
         
         # Run Thread
         self.setup_camera()
+        # self.camera_thread.start()
         self.main_thread.start()
-        self.demo_thread.start()
-        self.send_thread.start()
+        self.plc_g_thread.start()
+        self.plc_s_thread.start()
     
     # Hàm stream CAMERA DETECT lên giao diện
     def update_detect_image(self, img):
@@ -313,19 +322,19 @@ class App(QMainWindow):
         # Thông báo đẩy
         if data == "1":
             self.number_success += 1
-            self.tray[tray_idx].item(row,col).setBackground(QColor(67, 138, 94))
+            self.tray[tray_idx].item(row, col).setBackground(QColor(67, 138, 94))
             self.textBox.appendPlainText("Linh Kiện Tray {}".format(tray_idx+1) + " Hàng {}".format(row+1) + " Cột {}".format(col+1) + " Hoạt Động Tốt!\n")
         elif data == "0":
             self.number_error3 += 1
-            self.tray[tray_idx].item(row,col).setBackground(QColor(232, 80, 91))
+            self.tray[tray_idx].item(row, col).setBackground(QColor(232, 80, 91))
             self.textBox.appendPlainText("Linh Kiện Tray {}".format(tray_idx+1) + " Hàng {}".format(row+1) + " Cột {}".format(col+1) + " Bị Hỏng!\n")
         elif data == "-1":
             self.number_error1 += 1
-            self.tray[tray_idx].item(row,col).setBackground(QColor(255, 255, 51))
+            self.tray[tray_idx].item(row, col).setBackground(QColor(255, 255, 51))
             self.textBox.appendPlainText("Linh Kiện Tray {}".format(tray_idx+1) + " Hàng {}".format(row+1) + " Cột {}".format(col+1) + " Gặp Lỗi Vị Trí Trên Jig. Đề Nghị Kiểm Tra!\n")
         elif data == "404":
             self.number_error2 += 1
-            self.tray[tray_idx].item(row,col).setBackground(QColor(255, 128, 0))
+            self.tray[tray_idx].item(row, col).setBackground(QColor(255, 128, 0))
             self.textBox.appendPlainText("Linh Kiện Tray {}".format(tray_idx+1) + " Hàng {}".format(row+1) + " Cột {}".format(col+1) + " Gặp Lỗi Kết Nối Với Bộ Test. Đề Nghị Kiểm Tra!\n")
 
         # Cập nhật số liệu
@@ -415,6 +424,7 @@ class App(QMainWindow):
 
         # Send Data to PLC
         self.Controller.data = data
+        self.Controller.sendData()
         
     def updateTimer(self):
         cr_time = QTime.currentTime()
@@ -477,7 +487,7 @@ class App(QMainWindow):
                 folder = random.choice(rand_list)
                 image = cv2.imread(resource_path('data/demo/Test/data/' + folder + '/image.jpg'))
                 resize_img = cv2.resize(image, (int(717 * self.width_rate), int(450 * self.height_rate)), interpolation = cv2.INTER_AREA) # Resize cho Giao diện
-
+                
                 self.update_check_image(resize_img) # Đưa video lên giao diện
                 
                 # Khai báo kiểm tra Jig
@@ -493,11 +503,12 @@ class App(QMainWindow):
                 
                 # Nếu có linh kiện trên Jig
                 else:
+
                     # Kiểm tra lệch
                     crop_list = checkAlign.crop_image(image)
                     mean = checkAlign.calc_mean_all(crop_list)
                     check = checkAlign.check(mean)
-                    
+
                     # Kết quả trả về linh kiện không lệch
                     if check:
                         # Auto lưu dữ liệu kiểm thử
@@ -514,7 +525,7 @@ class App(QMainWindow):
 
                         # Đổi State -> Gửi State mới cho PLC
                         self.Controller.command = "Grip-1"
-                        self.wait = False
+                        self.Controller.sendCommand()
 
                     # Kết quả trả về linh kiện lệch
                     else:
@@ -532,37 +543,44 @@ class App(QMainWindow):
 
                         # Đổi State -> Gửi State mới cho PLC
                         self.Controller.command = "Grip-0"
-                        self.wait = False
+                        self.Controller.sendCommand()
+                    self.wait = False
                     self.command = "Wait"
-                        
+
         # Nhận kết quả từ PLC -> Cập nhật bảng số liệu -> Gửi lệnh cho PLC tiếp tục gắp linh kiện mới -> Chờ tay gắp
         elif self.command == "1":
+            self.wait = True
             self.update_statistic(self.command)
             self.command = "Wait"
         elif self.command == "0":
+            self.wait = True
             self.update_statistic(self.command)
             self.command = "Wait"
         elif self.command == "-1":
+            self.wait = True
             self.update_statistic(self.command)
             self.command = "Wait"
         elif self.command == "404":
+            self.wait = True
             self.update_statistic(self.command)
             self.command = "Wait"
 
         # Kết thúc -> Xuất ra thông báo
-        elif self.command == "Finish":
+        elif self.Controller.command == "Finish":
             if self.report_one_time:
                 self.report_one_time = False
                 QMessageBox.about(self, "Kiểm Tra Hoàn Tất", "Đã Kiểm Tra " + str(self.total) + " linh kiện!\n" + "Còn " + str(self.number_error1) + " linh kiện cần kiểm tra lại!")
                 self.command = "Stop"
+                self.delay = True
+                self.wait = True
 
         # Dừng khẩn cấp
-        elif self.command == "SOS":
+        elif self.command == "Interrupt":
             if self.error_one_time:
                 self.error_one_time = False
                 QMessageBox.about(self, "Dừng Khẩn Cấp", "Không thấy linh kiện trên Jig!")
                 self.command = "Stop"
-
+    
     # Init Camera
     def setup_camera(self):
         # Khai báo USB Camera Detect Config
@@ -577,32 +595,16 @@ class App(QMainWindow):
         # self.cap_check.set(4, 720)
         self.get_cap_check = True
 
-    # Demo without PLC
-    def demo_query(self):
-        if self.command == "Wait":
-            if self.demo_count <= self.total:
-                if self.Controller.command == "Grip-0":
-                        self.command = "-1"
-                elif self.Controller.command == "Grip-1":
-                        rand_list = ['1', '0', '404', '1', '1', '1', '1', '1']
-                        self.command = random.choice(rand_list)
-                if self.demo_count == self.total:
-                    self.demo_count += 1
-            else:
-                self.command = "Finish"      
-
-    def demo_send(self):
-        if self.delay == False:
-            self.Controller.command = "Grip"
-            self.wait = False
-            self.delay = True
-
-    # Demo Press Key to change State
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return:
-            self.command = "Detect"
-        elif event.key() == Qt.Key_Escape:
-            self.command = "Idle"
+    # Loop Get Command from PLC
+    def get_command(self):
+        print(self.command + " - " + self.Controller.queryCommand())
+        if self.Controller.queryCommand() != "Finish" and self.Controller.queryCommand() != "Reset" and self.wait == False:
+            self.command = self.Controller.queryCommand()
+            if self.command != "Idle" and self.command != "Grip" and self.command != "Grip-1" and self.command != "Grip-0":
+                self.wait = True
+        elif self.Controller.queryCommand() == "Finish":
+            self.Controller.command = self.Controller.queryCommand()
+        elif self.Controller.queryCommand() == "Reset":
             self.cam1.clear()
             self.cam2.clear()
             for c in range(42):
@@ -634,15 +636,30 @@ class App(QMainWindow):
             error3_item.setFont(self.font)
             self.statistic_table.setItem(4, 0, error3_item)
             self.textBox.clear()
-
+            
             self.report_one_time = True
             self.error_one_time = True
+            self.count = 0
             self.Controller.command = "Idle"
-            self.demo_count = 0
+            self.Controller.sendCommand()
             self.wait = False
-        elif (event.key() == Qt.Key_F12) and (self.Controller.command == "Grip"):
-            self.command = "Check"
-            self.demo_count += 1
+            self.delay = True
+
+    # Loop Send Command to PLC
+    def send_command(self):
+        if self.delay == False:
+            self.Controller.command = "Grip"
+            self.Controller.sendCommand()
+            # if self.count > 0:
+            self.Controller.sendCount(self.count+1)
+            self.wait = False
+            self.delay = True
+
+    # Demo Press Key to change State
+    # def keyPressEvent(self, event):
+    #     if (event.key() == Qt.Key_Return) and (self.Controller.command == "Grip"):
+    #         self.command = "Check"
+    #         self.demo_count += 1
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

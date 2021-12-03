@@ -22,6 +22,7 @@ from detectYesNo import check_chess
 from detectYesNo import Detect
 from checkOnJig import CheckOn
 import checkAlign
+# from swap_cam import check_mean
 
 import codecs
 import serial
@@ -89,8 +90,8 @@ class App(QMainWindow):
         self.cap_check = any
         self.get_cap_detect = False
         self.get_cap_check = False
-        self.cam_check = 1
-        self.cam_detect = 0
+        self.cam_check = 0
+        self.cam_detect = 1
         
 
         #NUC - PLC
@@ -690,6 +691,33 @@ class App(QMainWindow):
         self.time_label.setText(time)
 
 
+    def swap_cam(self):
+        ret1, image = self.cap_check.read()
+        image = cv2.resize(image,(1920,1080))
+        height, weight = 1080, 1920
+        start_row,start_col= int((height/2)),int((weight/2))
+        end_row,end_col= int((height/2)*2),int((weight/2)*2) 
+        cropped=image[start_row:end_row,start_col:end_col]
+        gray_tray_1 = cv2.cvtColor(cropped, cv2.COLOR_BGR2GRAY)
+        ret, thresh1 = cv2.threshold(gray_tray_1, 200, 255, cv2.THRESH_BINARY)
+
+    # cv2.imshow("ing", cropped)
+    # cv2.waitKey(10000)
+
+        histr1 = cv2.calcHist([thresh1], [0], None, [256], [0, 256])
+
+        value = int((min(histr1) + max(histr1))/2)
+        if value < 230000:
+            print("Befor: Cam_Check  ", self.cam_check, "Cam_Detect ", self.cam_detect)
+            self.cam_check, self.cam_detect = self.cam_detect, self.cam_check
+            print("After: Cam_Check  ", self.cam_check, "Cam_Detect ", self.cam_detect)
+
+            self.setup_camera()
+            ret3, image1 = self.cap_check.read() # Lấy dữ liệu từ camera
+
+            self.update_check_image(image1)
+        else:
+            print("Cam ok")
     #xử lý ảnh
     
     def main_process(self):
@@ -716,8 +744,8 @@ class App(QMainWindow):
                 ret1, image = self.cap_detect.read()
                 print("Detect: Cam Detect:", self.cam_detect, "Cam Check:", self.cam_check)
                 # image = cv2.resize(image, (int(717 * self.width_rate), int(450 * self.height_rate)), interpolation = cv2.INTER_AREA) # Resize cho Giao diện
-                #plt.imshow(image)
-                #plt.show()
+                # plt.imshow(image)
+                # plt.show()
 
                 #CHECK TRAY
                 detect = Detect()
@@ -751,28 +779,27 @@ class App(QMainWindow):
         elif self.command == 'Check' and self.prev_command == 'Done_detect':
             # print("Check")
             if self.get_cap_check == True:
-                # again = True
-                # while again:
-                #     try:
-                #         print("Befor_Check: Cam Detect:", self.cam_detect, "Cam Check:", self.cam_check)
-                #         ret2, image1 = self.cap_check.read()
-                #         again = not(ret2)
-                #     except:
-                #         print("An exception occurred")
+                again = True
+                while again:
+                    try:
+                        print("Befor_Check: Cam Detect:", self.cam_detect, "Cam Check:", self.cam_check)
+                        ret2, image1 = self.cap_check.read()
+                        again = not(ret2)
+                    except:
+                        print("An exception occurred")
                 
-                # # Lấy dữ liệu từ camera
-                # # plt.subplot(2,1)
-                # # plt.imshow(image)
-                # #plt.imshow(image1, cmap='gray')
-                # #plt.show()
+                # Lấy dữ liệu từ camera
+                # plt.subplot(2,1)
+                # plt.imshow(image)
+                #plt.imshow(image1, cmap='gray')
+                #plt.show()
 
 
-                # self.update_check_image(image1)
+                self.update_check_image(image1)
 
-                # cv2.imwrite('checkjig.jpg', image1)
-                # img_check = cv2.imread('checkjig.jpg', cv2.IMREAD_GRAYSCALE)
-                # check = checkAlign.check(img_check)
-                check = 1
+                cv2.imwrite('checkjig.jpg', image1)
+                img_check = cv2.imread('checkjig.jpg', cv2.IMREAD_GRAYSCALE)
+                check = checkAlign.check(img_check)
                 print(check)
                 # plt.imshow(img_check, cmap='gray')
                 # plt.show()
@@ -818,7 +845,7 @@ class App(QMainWindow):
                             if errCheck[0] == "1": index = 1
                         dispMap =["OK" , "I2C" , "DF_S" ,"AF_D" ,"FIXD" ,"EMPT" ,"DATA" ,"AWB" ,"CRC"]
                         Error = dispMap[index]
-                        # Error = "OK"
+                        Error = "OK"
                         print("loi hien tai:", Error)
                 #================================================================================#
                         self.checkError = Error
@@ -851,17 +878,23 @@ if __name__ == '__main__':
     # ex.setup_camera()
     print("123")
     ex.show()
+
     time.sleep(0.5)
     ex.setup_camera()
     print("Cam Detect:", ex.cam_detect, "Cam Check:", ex.cam_check)
     ex.init_statistic()
 
+   
+
     ret0, image1 = ex.cap_check.read() # Lấy dữ liệu từ camera
     ex.update_check_image(image1)
 
-    # if ex.button1_status == 1:
-    #     ret, image1 = ex.cap_check.read() # Lấy dữ liệu từ camera
-    #     ex.update_check_image(image1)
+    ex.swap_cam()
+    # plt.imshow(image1, cmap='gray')
+    # plt.show()
+
+    
+    
     
     ex.main_thread.start()
 

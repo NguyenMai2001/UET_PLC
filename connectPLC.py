@@ -1,3 +1,4 @@
+from ctypes import CFUNCTYPE
 from PyQt5.QtCore import QFileSelector
 import snap7
 import numpy as np
@@ -7,13 +8,13 @@ class PLC(object):
     def __init__(self):
         
         # Init Variables
-        self.IP = '192.168.128.2'       # IP của PLC
+        self.IP = '192.168.0.1'       # IP của PLC
         self.slot = 1                   # Lấy trong TIA Portal
         self.rack = 0                   # Lấy trong TIA Portal
-        self.DBNumber = 1               # Data Block cần nhận dữ liệu (DB1, DB2,...)
+        self.DBNumber = 47              # Data Block cần nhận dữ liệu (DB1, DB2,...)
         self.dataStart = 1              # Vị trí bit con trỏ nhận dữ liệu
         self.dataSize = 254             # Độ dài của data (1 byte, 4 bytes, 8 bytes,...)
-        self.data = np.zeros(42)        # Biến truyền data cho PLC
+        self.data = np.zeros(192)        # Biến truyền data cho PLC
     
     # Test Connection with PLC
     def testConnection(self):
@@ -43,13 +44,13 @@ class PLC(object):
                 if plc.get_connected():
                     plc.disconnect()
 
-    def querySignal(self):
+    def jig_Signal(self):
         plc = snap7.client.Client()
         again = True
         while again:
             try:
                 plc.connect(self.IP, self.rack, self.slot)
-                data = plc.db_read(self.DBNumber, 804, 1)
+                data = plc.db_read(self.DBNumber, 793, 1)
                 again = False
                 return snap7.util.get_bool(data, 0, 1)
             except Exception as e:
@@ -57,7 +58,34 @@ class PLC(object):
             finally:
                 if plc.get_connected():
                     plc.disconnect()
-    
+    def status_cam_checked(self):
+        plc = snap7.client.Client()
+        again = True
+        while again:
+            try:
+                plc.connect(self.IP, self.rack, self.slot)
+                data = plc.db_read(self.DBNumber, 280, self.dataSize)
+                again = False
+                return snap7.util.get_string(data, -1, 254)
+            except Exception as e:
+                print("Cannot Get Status Cam Checked! Error!")
+            finally:
+                if plc.get_connected():
+                    plc.disconnect()
+    def status_cam_in_jig(self):
+        plc = snap7.client.Client()
+        again = True
+        while again:
+            try:
+                plc.connect(self.IP, self.rack, self.slot)
+                data = plc.db_read(self.DBNumber, 536, self.dataSize)
+                again = False
+                return snap7.util.get_string(data, -1, 254)
+            except Exception as e:
+                print("Cannot Get Status Cam In Jig! Error!")
+            finally:
+                if plc.get_connected():
+                    plc.disconnect()
     # Write Data Function
     def sendCommand(self, command):
         plc = snap7.client.Client()
@@ -71,7 +99,7 @@ class PLC(object):
                     print("Command Corrupted!")
                     return
                 plc.db_write(self.DBNumber, self.dataStart, data)
-                # print("Command Write Successfully!")
+                print("Command Write Successfully!")
                 again = False
             except Exception as e:
                 print("Cannot Send Command! Error!")
@@ -82,14 +110,18 @@ class PLC(object):
     def sendData(self):
         plc = snap7.client.Client()
         again = True
+
+        plc.connect(self.IP, self.rack, self.slot)
+        
         while again:
             try:
                 plc.connect(self.IP, self.rack, self.slot)
-                for i in range(42):
+                for i in range(192):
                     data = plc.db_read(self.DBNumber, 256+int(i/8), 1)
                     snap7.util.set_bool(data, 0, i%8, self.data[i])
                     plc.db_write(self.DBNumber, 256+int(i/8), data)
-                # print("Data Write Successfully!")
+                    # print("147")
+                print("Data Write Successfully!")
                 again = False
             except Exception as e:
                 print("Cannot Send Data! Error!")
@@ -104,16 +136,53 @@ class PLC(object):
             try:
                 plc.connect(self.IP, self.rack, self.slot)
                 data = plc.db_read(self.DBNumber, 806, 1)
-                snap7.util.set_int(data, 0, total)
+                snap7.util.set_int(data, 1, total)
                 plc.db_write(self.DBNumber, 806, data)
-                # print("Count Write Successfully!")
+                print("Count Write Successfully!")
                 again = False
             except Exception as e:
                 print("Cannot Send Total! Error!")
             finally:
                 if plc.get_connected():
                     plc.disconnect()
-    
+    def send_status_cam_check(self, command):
+        plc = snap7.client.Client()
+        again = True
+        while again:
+            try:
+                plc.connect(self.IP, self.rack, self.slot)
+                data = plc.db_read(self.DBNumber, 281, self.dataSize)
+                snap7.util.set_string(data, -1, command, self.dataSize)
+                if not data.strip():
+                    print("Command Corrupted!")
+                    return
+                plc.db_write(self.DBNumber, 281, data)
+                print("Status Cam Check Command Write Successfully!")
+                again = False
+            except Exception as e:
+                print("Cannot Send Status Cam Check Command! Error!")
+            finally:
+                if plc.get_connected():
+                    plc.disconnect()
+    def send_status_cam_inJig(self, command):
+        plc = snap7.client.Client()
+        again = True
+        while again:
+            try:
+                plc.connect(self.IP, self.rack, self.slot)
+                data = plc.db_read(self.DBNumber, 537, self.dataSize)
+                snap7.util.set_string(data, -1, command, self.dataSize)
+                if not data.strip():
+                    print("Command Corrupted!")
+                    return
+                plc.db_write(self.DBNumber, 537, data)
+                print("Command Status Cam In Jig Write Successfully!")
+                again = False
+            except Exception as e:
+                print("Cannot Send Status Cam In Jig Command! Error!")
+            finally:
+                if plc.get_connected():
+                    plc.disconnect()
     def sendSignal(self, coord, signal):
         plc = snap7.client.Client()
         again = True
@@ -133,4 +202,61 @@ class PLC(object):
 
 if __name__ == "__main__":
     Controller = PLC()
-    Controller.sendData()
+    Controller.testConnection()
+    # Controller.sendData()
+    
+    print(Controller.queryCommand())
+
+    #Controller.Jig_Signal()
+    print(Controller.jig_Signal())
+    
+    # command = Controller.queryCommand()
+    # Controller.sendCommand('1')
+    # print(Controller.queryCommand())
+
+    # print("Command = ", command)
+    # if command == 'Detect':
+
+    #     result = np.zeros(192, dtype=int)
+    #     check_yes = np.array([0, 1, 2, 3, 4])
+                    
+    #     for i in range(192):
+    #         for j in range(check_yes.size):
+    #             if i == check_yes[j]: 
+    #                 result[i] = 1
+    #     print(result)
+    #     Controller.data = result
+
+    #     print("Data: ", Controller.data.size)
+    #     Controller.sendData()
+
+    # Controller.sendCommand('Done_detect')
+    # print(Controller.queryCommand())
+
+    # #print(Controller.CamCheckCommand())
+    # command = Controller.queryCommand()
+    # print("Command2 = ", command)
+    
+    # if command == 'Check':
+    #     Controller.send_status_cam_inJig('Ok_for_jig')
+    #     print(Controller.status_cam_in_jig())
+
+    #     Controller.send_status_cam_check('OK')
+    #     print(Controller.status_cam_checked())
+
+
+    # # command = Controller.status_cam_in_jig()
+    # # if command == 'Ok_for_jig':
+    # #     Controller.send_status_cam_check('OK')
+    # #     print(Controller.status_cam_checked())
+
+    # print(Controller.status_cam_checked())
+    # Controller.send_status_cam_check('OK')
+    # print(Controller.status_cam_checked())
+
+    # # print(Controller.status_cam_in_jig())
+    # # Controller.send_status_cam_inJig('3')
+    # # print(Controller.status_cam_in_jig())
+
+
+

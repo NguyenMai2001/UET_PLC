@@ -148,7 +148,7 @@ class Detect(object):
     def rotated(self, image):
         height, width = image.shape[:2]
         center = (width/2, height/2)
-        rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=-4, scale=1)
+        rotate_matrix = cv2.getRotationMatrix2D(center=center, angle=1, scale=1)
         rotated_image = cv2.warpAffine(src=image, M=rotate_matrix, dsize=(width, height))
         cv2.imshow('Rotated image', rotated_image)
         cv2.waitKey(0)
@@ -197,121 +197,277 @@ def add_crop_no(crop_img):
         # plt.show()
 
 if __name__ == "__main__":
-    #=========================DATA LAN 1 ==========================================================
-    file_test = cv2.imread('train_tray/train (2).jpg') 
-    img = check_chess(file_test)
+#     #=========================DATA LAN 1 ==========================================================
+#     file_test_l1 = cv2.imread('train_tray/train6.jpg') 
+#     img_l1 = check_chess(file_test_l1)
+#     detect = Detect()
+#     detect.image = detect.rotated(img_l1)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_yes(crop_img)
+
+#     #tray ko co cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_no(crop_img)
+
+#     crop_img = detect.crop_tray_3
+#     add_crop_no(crop_img)
+
+#     crop_img = detect.crop_tray_4
+#     add_crop_no(crop_img)
+
+#     #Anh 2
+#     file_test2_l1 = cv2.imread('train_tray/train6 (2).jpg') 
+#     img2_l1 = check_chess(file_test2_l1)
+#     detect = Detect()
+#     detect.image = detect.rotated(img2_l1)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_yes(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_3
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_4
+#     add_crop_no(crop_img)
+
+#     #Anh 3
+#     file_test3_l1 = cv2.imread('train_tray/train6 (3).jpg') 
+#     img3_l1 = check_chess(file_test3_l1)
+#     detect = Detect()
+#     detect.image = detect.rotated(img3_l1)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_3
+#     add_crop_yes(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_4
+#     add_crop_no(crop_img)
+
+#     #Anh 4
+#     file_test4_l1 = cv2.imread('train_tray/train6 (4).jpg') 
+#     img4_l1 = check_chess(file_test4_l1)
+#     detect = Detect()
+#     detect.image = detect.rotated(img4_l1)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_4
+#     add_crop_yes(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_3
+#     add_crop_no(crop_img)
+
+#     #=========================DATA LAN 2 ==========================================================
+#     file_test_l4 = cv2.imread('train_tray/train5.jpg') 
+#     img_l4 = check_chess(file_test_l4)
+#     detect = Detect()
+#     detect.image = detect.rotated(img_l4)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_yes(crop_img)
+
+#     #tray ko co cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_no(crop_img)
+
+#     crop_img = detect.crop_tray_3
+#     add_crop_no(crop_img)
+
+#     crop_img = detect.crop_tray_4
+#     add_crop_no(crop_img)
+
+#     #Anh 2
+#     file_test2_l4 = cv2.imread('train_tray/train5 (2).jpg') 
+#     img2_l4 = check_chess(file_test2_l4)
+#     detect = Detect()
+#     detect.image = detect.rotated(img2_l4)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_yes(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_3
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_4
+#     add_crop_no(crop_img)
+
+#     #Anh 3
+#     file_test3_l4 = cv2.imread('train_tray/train5 (3).jpg') 
+#     img3_l4 = check_chess(file_test3_l4)
+#     detect = Detect()
+#     detect.image = detect.rotated(img3_l4)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_3
+#     add_crop_yes(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_4
+#     add_crop_no(crop_img)
+
+#     #Anh 4
+#     file_test4_l4 = cv2.imread('train_tray/train5 (4).jpg') 
+#     img4_l4 = check_chess(file_test4_l4)
+#     detect = Detect()
+#     detect.image = detect.rotated(img4_l4)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_4
+#     add_crop_yes(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_3
+#     add_crop_no(crop_img)
+
+# #=========================DATA LAN 3 ==========================================================
+#     file_test_2tray = cv2.imread('train_tray/train1_4.jpg') 
+#     img_2tray = check_chess(file_test_2tray)
+#     detect = Detect()
+#     detect.image = detect.rotated(img_2tray)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_yes(crop_img)
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_4
+#     add_crop_yes(crop_img)
+
+#     #tray ko co cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_no(crop_img)
+
+#     crop_img = detect.crop_tray_3
+#     add_crop_no(crop_img)
+
+
+#     #Anh 2
+#     file_test_2tray2 = cv2.imread('train_tray/train2_3.jpg') 
+#     img_2tray2 = check_chess(file_test_2tray2)
+#     detect = Detect()
+#     detect.image = detect.rotated(img_2tray2)
+#     detect.thresh()
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_2
+#     add_crop_yes(crop_img)
+
+#     #tray co cam
+#     crop_img = detect.crop_tray_3
+#     add_crop_yes(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_1
+#     add_crop_no(crop_img)
+
+#     #tray khong cam
+#     crop_img = detect.crop_tray_4
+#     add_crop_no(crop_img)
+
+#=========================DATA LAN 3 ==========================================================
+    file_test_2tray = cv2.imread('train_tray/train1_2.jpg') 
+    img_2tray = check_chess(file_test_2tray)
     detect = Detect()
-    detect.image = detect.rotated(img)
+    detect.image = detect.rotated(img_2tray)
     detect.thresh()
 
     #tray co cam
     crop_img = detect.crop_tray_1
     add_crop_yes(crop_img)
 
-    #tray ko co cam
+    #tray co cam
     crop_img = detect.crop_tray_2
-    add_crop_no(crop_img)
+    add_crop_yes(crop_img)
 
+    #tray ko co cam
     crop_img = detect.crop_tray_3
     add_crop_no(crop_img)
 
     crop_img = detect.crop_tray_4
     add_crop_no(crop_img)
 
+
     #Anh 2
-    file_test2 = cv2.imread('train_tray/train (9).jpg') 
-    img2 = check_chess(file_test2)
+    file_test_2tray2 = cv2.imread('train_tray/train3_4.jpg') 
+    img_2tray2 = check_chess(file_test_2tray2)
     detect = Detect()
-    detect.image = detect.rotated(img2)
+    detect.image = detect.rotated(img_2tray2)
     detect.thresh()
 
     #tray co cam
-    crop_img = detect.crop_tray_2
+    crop_img = detect.crop_tray_3
+    add_crop_yes(crop_img)
+
+    #tray co cam
+    crop_img = detect.crop_tray_4
     add_crop_yes(crop_img)
 
     #tray khong cam
     crop_img = detect.crop_tray_1
     add_crop_no(crop_img)
 
-    #Anh 3
-    file_test3 = cv2.imread('train_tray/train (14).jpg') 
-    img3 = check_chess(file_test3)
-    detect = Detect()
-    detect.image = detect.rotated(img3)
-    detect.thresh()
-
-    #tray co cam
-    crop_img = detect.crop_tray_3
-    add_crop_yes(crop_img)
-
-    #Anh 4
-    file_test4 = cv2.imread('train_tray/train (18).jpg') 
-    img4 = check_chess(file_test4)
-    detect = Detect()
-    detect.image = detect.rotated(img4)
-    detect.thresh()
-
-    #tray co cam
-    crop_img = detect.crop_tray_4
-    add_crop_yes(crop_img)
-
-    #=========================DATA LAN 2 ==========================================================
-    file_test_l2 = cv2.imread('train_tray/train2 (4).jpg') 
-    img_l2 = check_chess(file_test_l2)
-    detect = Detect()
-    detect.image = detect.rotated(img_l2)
-    detect.thresh()
-
-    #tray co cam
-    crop_img = detect.crop_tray_1
-    add_crop_yes(crop_img)
-
-    #tray ko co cam
-    crop_img = detect.crop_tray_2
-    add_crop_no(crop_img)
-
-    crop_img = detect.crop_tray_3
-    add_crop_no(crop_img)
-
-    crop_img = detect.crop_tray_4
-    add_crop_no(crop_img)
-
-    #Anh 2
-    file_test2_l2 = cv2.imread('train_tray/train2 (6).jpg') 
-    img2_l2 = check_chess(file_test2_l2)
-    detect = Detect()
-    detect.image = detect.rotated(img2_l2)
-    detect.thresh()
-
-    #tray co cam
-    crop_img = detect.crop_tray_2
-    add_crop_yes(crop_img)
-
     #tray khong cam
-    crop_img = detect.crop_tray_1
+    crop_img = detect.crop_tray_2
     add_crop_no(crop_img)
-
-    #Anh 3
-    file_test3_l2 = cv2.imread('train_tray/train2 (1).jpg') 
-    img3_l2 = check_chess(file_test3_l2)
-    detect = Detect()
-    detect.image = detect.rotated(img3_l2)
-    detect.thresh()
-
-    #tray co cam
-    crop_img = detect.crop_tray_3
-    add_crop_yes(crop_img)
-
-    #Anh 4
-    file_test4_l2 = cv2.imread('train_tray/train2 (3).jpg') 
-    img4_l2 = check_chess(file_test4_l2)
-    detect = Detect()
-    detect.image = detect.rotated(img4_l2)
-    detect.thresh()
-
-    #tray co cam
-    crop_img = detect.crop_tray_4
-    add_crop_yes(crop_img)
 
     # =============================================================================
     
@@ -378,5 +534,4 @@ if __name__ == "__main__":
 
     #luu clf
     with open('clf_tray.pkl', 'wb') as f:
-        pickle.dump(clf_tray, f)   
-
+        pickle.dump(clf_tray, f)  

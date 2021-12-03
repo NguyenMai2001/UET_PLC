@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 # from CODE.detectYesNo import check_chess
-from PIL.Image import Image
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -13,9 +12,10 @@ import sys
 import time
 import os
 import math
+from matplotlib import pyplot as plt
 
-# import checkAlign
-#from connectPLC import PLC
+import checkAlign
+from connectPLC import PLC
 from detectYesNo import check_chess
 from detectYesNo import Detect
 from checkOnJig import CheckOn
@@ -75,8 +75,8 @@ class App(QMainWindow):
         self.get_cap_detect = False
         self.get_cap_check = False
 
-        # self.Controller = PLC()
-        # self.command = ""
+        self.Controller = PLC()
+        self.command = ""
 
         # Run QT
         self.initUI()
@@ -125,7 +125,7 @@ class App(QMainWindow):
         timer.start(1000)
         self.time_label.setStyleSheet("color: rgb(255, 255, 255);")
 
-        # Show Detect Camera
+        # # Show Detect Camera
         # self.cam1_name = QLabel("DETECT CAMERA", self)
         # self.cam1_name.setGeometry(55 * self.width_rate, 127 * self.height_rate, 582 * self.width_rate, 60 * self.height_rate)
         # self.cam1_name.setAlignment(Qt.AlignCenter)
@@ -140,13 +140,13 @@ class App(QMainWindow):
         
         # Show Check Camera
         self.cam2_name = QLabel("CHECK CAMERA", self)
-        self.cam2_name.setGeometry(960 * self.width_rate, 127 * self.height_rate, 810 * self.width_rate, 60 * self.height_rate)
+        self.cam2_name.setGeometry(960 * self.width_rate, 127 * self.height_rate, 456 * self.width_rate, 60 * self.height_rate)
         self.cam2_name.setAlignment(Qt.AlignCenter)
         self.cam2_name.setStyleSheet("background-color: rgb(50, 130, 184);"
                                     "color: rgb(255, 255, 255);"
                                     "font: bold 14pt;")
         self.cam2 = QLabel(self)
-        self.cam2.setGeometry(960 * self.width_rate, 185 * self.height_rate, 810 * self.width_rate, 400 * self.height_rate)
+        self.cam2.setGeometry(960 * self.width_rate, 185 * self.height_rate, 456 * self.width_rate, 410 * self.height_rate)
         self.cam2.setStyleSheet("border-color: rgb(50, 130, 184);"
                                 "border-width: 5px;"
                                 "border-style: inset;")
@@ -157,9 +157,8 @@ class App(QMainWindow):
         
         # Trays Information
         self.tray = []
-        for i in range(2):
-            k = 2-i
-            tray_name = QLabel("TRAY {}".format(k), self)
+        for i in range(4):
+            tray_name = QLabel("TRAY {}".format(i+1), self)
             tray_name.setGeometry((55 + 456*i - 5) * self.width_rate, 606 * self.height_rate, 432 * self.width_rate, 55 * self.height_rate)
             tray_name.setAlignment(Qt.AlignCenter)
             tray_name.setStyleSheet("background-color:rgb(50, 130, 184);"
@@ -184,7 +183,7 @@ class App(QMainWindow):
         
         self.tray2 = []
         for i in range(2):
-            tray_name = QLabel("TRAY {}".format(i+3), self)
+            tray_name = QLabel("NG {}".format(i+1), self)
             tray_name.setGeometry((55 + 456*i - 5) * self.width_rate, 127 * self.height_rate, 432 * self.width_rate, 55 * self.height_rate)
             tray_name.setAlignment(Qt.AlignCenter)
             tray_name.setStyleSheet("background-color:rgb(50, 130, 184);"
@@ -207,29 +206,16 @@ class App(QMainWindow):
             table.setStyleSheet("color: rgb(255, 255, 255);")
             self.tray2.append(table)
 
-        # Note Table
-        self.s_name = QLabel("REPORT", self)
-        self.s_name.setGeometry(960 * self.width_rate, 605 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
-        self.s_name.setAlignment(Qt.AlignCenter)
-        self.s_name.setStyleSheet("background-color:rgb(50, 130, 184);"
-                                    "color: rgb(255, 255, 255);"
-                                    "font: bold 14pt;")
-        self.textBox = QPlainTextEdit(self)
-        self.textBox.setGeometry(960 * self.width_rate, 663 * self.height_rate, 399 * self.width_rate, 410 * self.height_rate)
-        self.textBox.setFont(QFont('', int(14 / self.font_rate), QFont.Bold))
-        
         # Table Info Area        
         self.s_name = QLabel("INFORMATION", self)
-        # self.s_name.setGeometry(1450 * self.width_rate, 127 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
-        self.s_name.setGeometry(1450 * self.width_rate, 605 * self.height_rate, 425 * self.width_rate, 60 * self.height_rate)
-
+        self.s_name.setGeometry(1450 * self.width_rate, 127 * self.height_rate, 399 * self.width_rate, 60 * self.height_rate)
         self.s_name.setAlignment(Qt.AlignCenter)
         self.s_name.setStyleSheet("background-color:rgb(50, 130, 184);"
                                     "color: rgb(255, 255, 255);"
                                     "font: bold 14pt;")
 
         self.statistic_table = QTableWidget(5, 2, self)
-        self.statistic_table.setGeometry(1450 * self.width_rate, 663 * self.height_rate, int(424 * self.width_rate) + 1, int(405 * self.height_rate) + 1)
+        self.statistic_table.setGeometry(1450 * self.width_rate, 185 * self.height_rate, int(399 * self.width_rate) + 1, int(410 * self.height_rate) + 1)
         self.statistic_table.horizontalHeader().hide()
         self.statistic_table.verticalHeader().hide()
         self.statistic_table.setFont(self.font)
@@ -239,9 +225,9 @@ class App(QMainWindow):
                                             "border-style: inset;"
                                             "border-color: rgb(50, 130, 184);")
         for j in range(2):
-            self.statistic_table.setColumnWidth(j, 207 * self.width_rate)
+            self.statistic_table.setColumnWidth(j, 195 * self.width_rate)
         for j in range(5):
-            self.statistic_table.setRowHeight(j, 79 * self.height_rate)
+            self.statistic_table.setRowHeight(j, 80 * self.height_rate)
         tested_item = QTableWidgetItem("TESTED")
         tested_item.setTextAlignment(Qt.AlignCenter)
         tested_item.setFont(self.font)
@@ -278,27 +264,12 @@ class App(QMainWindow):
         self.exit_button.setStyleSheet("border: none")
         self.exit_button.clicked.connect(self.close)
 
-        # # Create Thread
-        # self.camera_thread = Camera()
-        # self.camera_thread.setup.connect(self.setup_camera)
-        # self.main_thread = Thread()
-        # self.main_thread.progress.connect(self.main_process)
-        # self.plc_thread = Query()
-        # self.main_thread.progress.connect(self.get_command)
+     # Hàm cập nhật giờ   
+    def updateTimer(self):
+        cr_time = QTime.currentTime()
+        time = cr_time.toString('hh:mm AP')
+        self.time_label.setText(time)
 
-        # # Run Thread
-        # self.camera_thread.start()
-        # self.main_thread.start()
-        # self.plc_thread.start()
-
-    # Hàm stream CAMERA DETECT lên giao diện
-    # def update_detect_image(self, img):
-    #     rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    #     h, w, ch = rgbImage.shape
-    #     bytesPerLine = ch * w
-    #     convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
-    #     self.cam1.setPixmap(QPixmap.fromImage(convertToQtFormat))
-    
     # Hàm stream CAMERA CHECK lên giao diện
     def update_check_image(self, img):
         rgbImage = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -307,121 +278,76 @@ class App(QMainWindow):
         convertToQtFormat = QImage(rgbImage.data, w, h, bytesPerLine, QImage.Format_RGB888)
         self.cam2.setPixmap(QPixmap.fromImage(convertToQtFormat))
     
+    def setup_camera(self):
+        self.cap_detect = cv2.VideoCapture(2)
+        # cv2.imshow(self.cap_detect)
+        # cv2.waitKey(0)
+        # Khai báo USB Camera Detect Config
+        self.get_cap_detect = True
+        
+        self.cap_check = cv2.VideoCapture(0) # Khai báo USB Camera Check Config
+        self.cap_check.set(3, 1920)
+        self.cap_check.set(4, 1080)
+        # cv2.imshow(self.cap_check)
+        # cv2.waitKey(0)
+        self.get_cap_check = True
+        self.cap_detect.set(3, 1920)
+        self.cap_detect.set(4, 1080)
     
-    # Hàm cập nhật giờ   
-    def updateTimer(self):
-        cr_time = QTime.currentTime()
-        time = cr_time.toString('hh:mm AP')
-        self.time_label.setText(time)
-
-    #Khởi tạo bảng giá trị 
-    def init_statistic(self):
-        tested = QTableWidgetItem("{}".format(0) + " / {}".format(self.total))
-        tested.setTextAlignment(Qt.AlignCenter)
-        self.statistic_table.setItem(0,1,tested)
-        # ratio_tested = QTableWidgetItem("{} %".format(0))
-        # ratio_tested.setTextAlignment(Qt.AlignCenter)
-        # self.statistic_table.setItem(0,2,ratio_tested)
-
-        success = QTableWidgetItem("{}".format(0) + " / {}".format(0))
-        success.setTextAlignment(Qt.AlignCenter)
-        self.statistic_table.setItem(1,1,success)
-        # ratio_success = QTableWidgetItem("{} %".format(0))
-        # ratio_success.setTextAlignment(Qt.AlignCenter)
-        # self.statistic_table.setItem(1,2,ratio_success)
-
-        error1 = QTableWidgetItem("{}".format(0) + " / {}".format(0))
-        error1.setTextAlignment(Qt.AlignCenter)
-        self.statistic_table.setItem(2,1,error1)
-        # ratio_error1 = QTableWidgetItem("{} %".format(0))
-        # ratio_error1.setTextAlignment(Qt.AlignCenter)
-        # self.statistic_table.setItem(2,2,ratio_error1)
-
-        error2 = QTableWidgetItem("{}".format(0) + " / {}".format(0))
-        error2.setTextAlignment(Qt.AlignCenter)
-        self.statistic_table.setItem(3,1,error2)
-        # ratio_error2 = QTableWidgetItem("{} %".format(0))
-        # ratio_error2.setTextAlignment(Qt.AlignCenter)
-        # self.statistic_table.setItem(3,2,ratio_error2)
-
-        error3 = QTableWidgetItem("{}".format(0) + " / {}".format(0))
-        error3.setTextAlignment(Qt.AlignCenter)
-        self.statistic_table.setItem(4,1,error3)
-        # ratio_error3 = QTableWidgetItem("{} %".format(0))
-        # ratio_error3.setTextAlignment(Qt.AlignCenter)
-        # self.statistic_table.setItem(4,2,ratio_error3)
-    #xử lý ảnh
+    
     def main_process(self):
-        # Reset Main Variables
-        self.total = 0
-        self.number_tested = 0
-        self.number_success = 0
-        self.number_error1 = 0
-        self.number_error2 = 0
-        self.number_error3 = 0
-        self.count = 0
+        # self.cap_detect.set(3, 1920)
+        # self.cap_detect.set(4, 1080)
+        ret, image = self.cap_detect.read()
+        # image = cv2.resize(image, (int(717 * self.width_rate), int(450 * self.height_rate)), interpolation = cv2.INTER_AREA) # Resize cho Giao diện
+        # plt.imshow(image)
+        # plt.show()
+        
+        ret, image1 = self.cap_check.read() # Lấy dữ liệu từ camera
+        # plt.subplot(2,1)
+        # plt.imshow(image)
+        plt.imshow(image1, cmap='gray')
+        plt.show()
 
-        file_test = cv2.imread('Camera_test/tray/tray (14).jpg')
-        self.update_check_image(file_test)
-
+        #CHECK TRAY
         detect = Detect()
-        detect.image = check_chess(image)
+        img = check_chess(image)
+        detect.rotated(img)
+        detect.image = cv2.imread('rotated_image.jpg', cv2.IMREAD_GRAYSCALE)
+        # plt.imshow(detect.image, cmap="gray")
+        # plt.show()
         detect.thresh()
 
         # Detect YES/NO
         result = detect.check(detect.crop_tray_1)
-        result = np.append(detect.check(detect.crop_tray_2))
-        result = np.append(detect.check(detect.crop_tray_3))
-        result = np.append(detect.check(detect.crop_tray_4))
-        return(result)
-    def update_data(self, data):
-        c = 0
-        for k in range(4):
-            for j in range(6):
-                for i in range(7,-1,-1):
-                    self.tray[k].setItem(i,j,QTableWidgetItem())
-                    if(int(data[c])):
-                        self.tray[k].item(i,j).setBackground(QColor(102, 102, 255))
-                        self.total += 1
-                    else:
-                        self.tray[k].item(i,j).setBackground(QColor(127, 255, 0))
-                        self.total += 1
-                    c += 1
+        result = np.append(result, detect.check(detect.crop_tray_2))
+        result = np.append(result, detect.check(detect.crop_tray_3))
+        result = np.append(result, detect.check(detect.crop_tray_4))
+        print(result)
+        # self.update_detect_image(resize_img)
+
+        # self.update_check_image(image1)
+
+        #CHECK LECH
+
+        # checkOn = CheckOn()
+        cv2.imwrite('checkjig.jpg', image1)
+        img_check = cv2.imread('checkjig.jpg', cv2.IMREAD_GRAYSCALE)
+        check = checkAlign.check(img_check)
+        plt.imshow(img_check, cmap='gray')
+        plt.show()
+        print(check)
+
+
+
+
+
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = App()
     ex.show()
-    
-    print("123")
-
-    path = "Camera_test/w7/w7 (3).jpg"
-    image = cv2.imread(path)
-
-   
-    ex.update_check_image(image)
-
-    
-    ex.init_statistic()
-
-    file_test = cv2.imread('Camera_test/tray/tray (14).jpg') #demo
-    img = check_chess(file_test)
-    # cv2.imwrite('anh.png', img)
-    # cv2.imshow("hâhaaha", img)
-    detect = Detect()
-    detect.image = img
-    # detect.image = cv2.resize(detect.image, (1920, 1080), interpolation=cv2.INTER_AREA)
-
-    # detect.get_coord()
-    detect.thresh()
-    mask = detect.check(detect.crop_tray_1)
-    mask = np.append(mask, detect.check(detect.crop_tray_2))
-    mask = np.append(mask, detect.check(detect.crop_tray_3))
-    mask = np.append(mask, detect.check(detect.crop_tray_4))
-    print(mask)
-
-    ex.update_data(mask)
+    ex.setup_camera()
+    ex.main_process()
     sys.exit(app.exec_())
-
-    

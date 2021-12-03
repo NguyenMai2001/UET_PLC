@@ -13,7 +13,7 @@ count = 0
 # plt.subplots(3,4,figsize=(23,30))
 num = 100
 for i in range(num):
-    path = "Camera_test/w7/w7 (" + str(i+1) + ").jpg"
+    path = "Camera_test/cr7/cr7 (" + str(i+1) + ").jpg"
     img=cv2.imread(path, cv2.IMREAD_GRAYSCALE)
     new_img = img[start_row:end_row,start_col:end_col]
 

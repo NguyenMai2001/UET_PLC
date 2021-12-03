@@ -751,28 +751,27 @@ class App(QMainWindow):
         elif self.command == 'Check' and self.prev_command == 'Done_detect':
             # print("Check")
             if self.get_cap_check == True:
-                # again = True
-                # while again:
-                #     try:
-                #         print("Befor_Check: Cam Detect:", self.cam_detect, "Cam Check:", self.cam_check)
-                #         ret2, image1 = self.cap_check.read()
-                #         again = not(ret2)
-                #     except:
-                #         print("An exception occurred")
+                again = True
+                while again:
+                    try:
+                        print("Befor_Check: Cam Detect:", self.cam_detect, "Cam Check:", self.cam_check)
+                        ret2, image1 = self.cap_check.read()
+                        again = not(ret2)
+                    except:
+                        print("An exception occurred")
                 
-                # # Lấy dữ liệu từ camera
-                # # plt.subplot(2,1)
-                # # plt.imshow(image)
-                # #plt.imshow(image1, cmap='gray')
-                # #plt.show()
+                # Lấy dữ liệu từ camera
+                # plt.subplot(2,1)
+                # plt.imshow(image)
+                #plt.imshow(image1, cmap='gray')
+                #plt.show()
 
 
-                # self.update_check_image(image1)
+                self.update_check_image(image1)
 
-                # cv2.imwrite('checkjig.jpg', image1)
-                # img_check = cv2.imread('checkjig.jpg', cv2.IMREAD_GRAYSCALE)
-                # check = checkAlign.check(img_check)
-                check = 1
+                cv2.imwrite('checkjig.jpg', image1)
+                img_check = cv2.imread('checkjig.jpg', cv2.IMREAD_GRAYSCALE)
+                check = checkAlign.check(img_check)
                 print(check)
                 # plt.imshow(img_check, cmap='gray')
                 # plt.show()
@@ -863,7 +862,7 @@ if __name__ == '__main__':
     #     ret, image1 = ex.cap_check.read() # Lấy dữ liệu từ camera
     #     ex.update_check_image(image1)
     
-    ex.main_thread.start()
+    # ex.main_thread.start()
 
     sys.exit(app.exec_())
 

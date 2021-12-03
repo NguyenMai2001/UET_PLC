@@ -15,7 +15,7 @@ X = pickle.load(pickle_in)
 pickle_in = open('y.pickel', 'rb')
 y = pickle.load(pickle_in)
 
-xtr, xte, ytr, yte = train_test_split(X, y, test_size=0.01, random_state=101)
+xtr, xte, ytr, yte = train_test_split(X, y, test_size=0.33, random_state=101)
 # print(X,y)
 # print(X.shape)
 # print(y.shape)
